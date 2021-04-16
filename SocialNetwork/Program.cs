@@ -10,7 +10,7 @@ namespace SocialNetwork
         public static UserService userService = new UserService();
         static void Main(string[] args)
         {
-            Console.WriteLine("Добро пожаловать в социальную сеть.");
+            Console.WriteLine("Добро пожаловать в социальную сеть!");
 
             while (true)
             {
