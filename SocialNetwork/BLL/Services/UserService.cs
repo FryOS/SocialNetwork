@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SocialNetwork.BLL.Services
 {
-    class UserService
+    public class UserService
     {
         IUserRepository userRepository;
         public UserService()
@@ -41,6 +41,8 @@ namespace SocialNetwork.BLL.Services
 
             if (userRepository.FindByEmail(userRegistrationData.Email) != null)
                 throw new ArgumentNullException();
+
+            
 
             var userEntity = new UserEntity()
             {
