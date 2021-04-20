@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace SocialNetwork.BLL.Models
 {
@@ -17,17 +13,25 @@ namespace SocialNetwork.BLL.Models
         public string FavoriteMovie { get; set; }
         public string FavoriteBook { get; set; }
 
+        public IEnumerable<Message> IncomingMessages { get; }
+        public IEnumerable<Message> OutgoingMessages { get; }
+        public IEnumerable<User> Friends { get; }
+
         public User(
-            int id,
+            int Id,
             string firstName,
             string lastName,
             string password,
             string email,
             string photo,
             string favoriteMovie,
-            string favoriteBook)
+            string favoriteBook,
+            IEnumerable<Message> incomingMessages,
+            IEnumerable<Message> outgoingMessages,
+            IEnumerable<User> friends
+            )
         {
-            this.Id = id;
+            this.Id = Id;
             this.FirstName = firstName;
             this.LastName = lastName;
             this.Password = password;
@@ -35,6 +39,9 @@ namespace SocialNetwork.BLL.Models
             this.Photo = photo;
             this.FavoriteMovie = favoriteMovie;
             this.FavoriteBook = favoriteBook;
+            this.IncomingMessages = incomingMessages;
+            this.OutgoingMessages = outgoingMessages;
+            this.Friends = friends;
         }
     }
 }

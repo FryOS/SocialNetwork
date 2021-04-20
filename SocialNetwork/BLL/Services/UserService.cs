@@ -13,10 +13,14 @@ namespace SocialNetwork.BLL.Services
 {
     public class UserService
     {
+        MessageService messageService;
         IUserRepository userRepository;
+        IFriendRepository friendRepository;
         public UserService()
         {
             userRepository = new UserRepository();
+            messageService = new MessageService();
+            friendRepository = new FriendRepository();
         }
 
         public void Register(UserRegistrationData userRegistrationData)
@@ -56,6 +60,22 @@ namespace SocialNetwork.BLL.Services
                 throw new Exception();
         }
 
+        internal User FindById(int id)
+        {
+            var findUserEntity = userRepository.FindById(id);
+            if (findUserEntity is null) throw new UserNotFoundException();
+
+            return ConstructUserModel(findUserEntity);
+        }
+
+        public User FindByEmail(string email)
+        {
+            var findUserEntity = userRepository.FindByEmail(email);
+            if (findUserEntity is null) throw new UserNotFoundException();
+
+            return ConstructUserModel(findUserEntity);
+        }
+
         public User Authenticate(UserAuthenticationData userAuthenticationData)
         {
             var findUserEntity = userRepository.FindByEmail(userAuthenticationData.Email);
@@ -65,26 +85,8 @@ namespace SocialNetwork.BLL.Services
                 throw new WrongPasswordException();
 
             return ConstructUserModel(findUserEntity);
-        }
-
-        public User ConstructUserModel(UserEntity userEntity) 
-        {
-            return new User(userEntity.Id,
-                          userEntity.firstname,
-                          userEntity.lastname,
-                          userEntity.password,
-                          userEntity.email,
-                          userEntity.photo,
-                          userEntity.favorite_movie,
-                          userEntity.favorite_book);
-        }
-        public User FindByEmail(string email) 
-        {
-            var findUserEntity = userRepository.FindByEmail(email);
-            if (findUserEntity is null) throw new UserNotFoundException();
-
-            return ConstructUserModel(findUserEntity);
-        }
+        }    
+       
         public void Update(User user) 
         {
             var updatableUserEntity = new UserEntity()
@@ -101,6 +103,48 @@ namespace SocialNetwork.BLL.Services
 
             if (this.userRepository.Update(updatableUserEntity) == 0)
                 throw new Exception();
+        }
+
+        public IEnumerable<User> GetFriendsByUserId(int userId)
+        {
+            return friendRepository.FindAllByUserId(userId)
+                    .Select(friendsEntity => FindById(friendsEntity.friend_id));
+        }
+
+        public void AddFriend(UserFriendData userAddingFriendData)
+        {
+            var findUserEntity = userRepository.FindByEmail(userAddingFriendData.FriendEmail);
+            if (findUserEntity is null) throw new UserNotFoundException();
+
+            var friendEntity = new FriendEntity()
+            {
+                user_id = userAddingFriendData.UserId,
+                friend_id = findUserEntity.Id
+            };
+
+            if (this.friendRepository.Create(friendEntity) == 0)
+                throw new Exception();
+        }
+
+
+        public User ConstructUserModel(UserEntity userEntity)
+        {
+            var incomingMessages = messageService.GetIncomingMessagesByUserId(userEntity.Id);
+            var outgoingMessages = messageService.GetOutcomingMessagesByUserId(userEntity.Id);
+            var friends = GetFriendsByUserId(userEntity.Id);
+
+            return new User(userEntity.Id,
+                          userEntity.firstname,
+                          userEntity.lastname,
+                          userEntity.password,
+                          userEntity.email,
+                          userEntity.photo,
+                          userEntity.favorite_movie,
+                          userEntity.favorite_book,
+                          incomingMessages,
+                          outgoingMessages,
+                          friends
+                          );
         }
 
 
